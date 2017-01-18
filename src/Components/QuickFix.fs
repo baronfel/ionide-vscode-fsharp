@@ -59,7 +59,7 @@ module QuickFix =
                mkQuickFix doc d.range "Prefix with _" s2 |] )
 
 
-    let upercaseDU (doc : TextDocument) (diagnostics : Diagnostic seq) =
+    let uppercaseDU (doc : TextDocument) (diagnostics : Diagnostic seq) =
         diagnostics
         |> ifDiagnostic "Discriminated union cases and exception labels must be uppercase identifiers" (fun d ->
             let s = doc.getText(d.range).ToCharArray()
@@ -80,7 +80,7 @@ module QuickFix =
                     getSuggestions
                     getNewKeywordSuggestions
                     fixUnused
-                    upercaseDU
+                    uppercaseDU
                 |] |> Array.collect (fun f -> f doc diagnostics) |> ResizeArray |> Case1
             }
 
