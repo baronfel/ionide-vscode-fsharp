@@ -69,7 +69,13 @@ module QuickFix =
             let s = String(chars)
 
             [| mkRenameFix doc d.range (sprintf "Replace with %s" s) s |] )
-
+    
+    let applyTypeSignature (doc : TextDocument) (diagnostics : Diagnostic seq) = 
+        let makeNewSig initialText = ""
+        diagnostics |> ifDiagnostic "Apply Type Signature" (fun diag -> 
+            let newSig = makeNewSig (doc.getText(diag.range))
+            [| mkQuickFix doc diag.range (sprintf "Replace with `%s`" newSig) newSig |]
+        )
 
     let private createProvider () =
         { new CodeActionProvider
@@ -81,6 +87,7 @@ module QuickFix =
                     getNewKeywordSuggestions
                     fixUnused
                     uppercaseDU
+                    applyTypeSignature
                 |] |> Array.collect (fun f -> f doc diagnostics) |> ResizeArray |> Case1
             }
 
