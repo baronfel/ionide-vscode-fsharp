@@ -472,7 +472,53 @@ Consider:
                 return fsacPaths.MSBuild
         }
 
+    type TraceLogConfig =
+        { format: string
+          verbosity: string
+          port: int option }
+
     let private createClient opts =
+        let channelForWebsocket (s: Ws.Websocket): OutputChannel =
+            let mutable buffer = ""
+            { new OutputChannel with
+                member this.name
+                    with set (v: string): unit = ()
+                member x.name = "debug websocket"
+                member x.append (s: string) =
+                    buffer <- buffer + s
+                member x.appendLine l =
+                    if s.readyState = Ws.ReadyState.Open
+                    then
+                        buffer <- buffer + l
+                        s.send(buffer)
+                        printfn "%s" buffer
+                        buffer <- ""
+                member x.clear () =
+                    buffer <- ""
+                member x.show _ = ()
+                member x.dispose () =
+                    buffer <- ""
+                member x.hide () = ()
+            }
+        let debugWebsocketChannel =
+            match Configuration.tryGet "FSharp.trace.server" with
+            | Some (config: TraceLogConfig) ->
+                let port: int = defaultArg config.port 12345
+                let ws =  Ws.websocket.create(sprintf "ws://localhost:%d" port)
+                ws.onopen (fun () ->
+                    ()
+                )
+                ws.onerror (fun err ->
+                    ()
+                )
+                ws.onclose (fun () ->
+                    ()
+                )
+                let output = channelForWebsocket ws
+                Some output
+            | _ ->
+                None
+
         let options =
             createObj [
                 "run" ==> opts
@@ -500,8 +546,7 @@ Consider:
             opts.documentSelector <- Some !^selector
             opts.synchronize <- Some synch
             opts.revealOutputChannelOn <- Some Client.RevealOutputChannelOn.Never
-
-
+            debugWebsocketChannel |> Option.iter (fun wsCh -> opts.outputChannel <- Some wsCh)
             opts.initializationOptions <- Some !^(Some initOpts)
 
             opts

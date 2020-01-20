@@ -46,7 +46,7 @@ module Environment =
 
     let private fscFileName = if isWin then "Fsc.exe" else "fsharpc"
 
-    let configFSIPath =
+    let configFSIPath: string option =
         Configuration.tryGet "FSharp.fsiFilePath"
 
     let configFSCPath =
@@ -67,7 +67,7 @@ module Environment =
             spawnAndGetTrimmedOutput "which" "" toolName
             |> Promise.map (fun (err, path, errs) -> if path <> "" then Some path else None )
 
-    let configMSBuildPath = Configuration.tryGet "FSharp.msbuildLocation"
+    let configMSBuildPath: string option = Configuration.tryGet "FSharp.msbuildLocation"
 
     let dotnet =
         Configuration.tryGet "FSharp.dotnetRoot"

@@ -3,6 +3,27 @@ namespace Ionide.VSCode.FSharp
 open System
 open Fable.Import.vscode
 
+module Ws =
+    open Fable.Core
+
+    type ReadyState =
+    | Connecting = 0
+    | Open = 1
+    | Closing = 2
+    | Closed = 3
+
+    type Websocket =
+        [<Emit("new $0($1)")>]
+        abstract member create: string -> Websocket
+        abstract member send: string -> unit
+        abstract member readyState: ReadyState
+        abstract member onopen: (unit -> unit) -> unit
+        abstract member onerror: (obj -> unit) -> unit
+        abstract member onclose: (unit -> unit) -> unit
+
+    [<Import("*","ws")>]
+    let websocket : Websocket = jsNative
+
 [<RequireQualifiedAccess>]
 module CodeRange =
 
@@ -85,9 +106,10 @@ module Document =
 [<RequireQualifiedAccess>]
 module Configuration =
 
-    let tryGet key =
-        let configuredValue = workspace.getConfiguration().get(key)
-        if configuredValue = "" then None else Some configuredValue
+    let tryGet key: 't option =
+        let c = workspace.getConfiguration();
+        let configuredValue = c.get(key)
+        if box configuredValue = null then None else Some configuredValue
 
     let get defaultValue key =
         workspace.getConfiguration().get(key, defaultValue)

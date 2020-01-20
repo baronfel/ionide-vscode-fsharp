@@ -50,7 +50,7 @@ module Logging =
         let argList = args |> List.ofArray
         nameOnConsoleObject, (List.append [ box browserLogTemplate ] argList)
 
-    let inline private writeDevToolsConsole (level : Level) (source : string option) (template : string) (args : obj[]) =
+    let inline writeDevToolsConsole (level : Level) (source : string option) (template : string) (args : obj[]) =
         let nameOnConsoleObject, logArgs = getConsoleLogArgs level source template args
         consoleLog(nameOnConsoleObject, logArgs)
 
