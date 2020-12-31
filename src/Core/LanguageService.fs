@@ -466,17 +466,16 @@ module LanguageService =
             cl.sendRequest("fsharp/loadAnalyzers", req)
             |> Promise.map (ignore)
 
-    let getHighlighting (f) =
+    let getHighlighting (f): JS.Promise<HighlightingResponse> =
         match client with
         | None -> Promise.empty
         | Some cl ->
             let req : Types.HighlightingRequest= {
                 FileName = f
             }
-            cl.sendRequest("fsharp/highlighting", req)
-            |> Promise.map (fun (res: Types.PlainNotification) ->
-                res.content |> ofJson<HighlightingResult>
-            )
+            cl.sendRequest<Types.HighlightingRequest, obj>("fsharp/highlighting", req)
+            |> Promise.map (fun r -> r?data)
+            // |> Promise.map (fun (res: HighlightingResult) ->            )
 
     let fsharpLiterate (f) =
         match client with
